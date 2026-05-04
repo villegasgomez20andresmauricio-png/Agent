@@ -19,6 +19,8 @@ body {
 }
 
 #chat {
+  display: flex;
+  flex-direction: column;
   flex: 1;
   padding: 10px;
   overflow-y: auto;
@@ -26,18 +28,21 @@ body {
 }
 
 .msg {
-  max-width: 70%;
-  padding: 10px;
-  margin: 8px;
-  border-radius: 10px;
+  display: inline-block;
+  padding: 10px 12px;
+  margin: 6px 10px;
+  border-radius: 12px;
   color: white;
   word-wrap: break-word;
+  white-space: pre-wrap;
+  max-width: 60%;
+  width: fit-content;
 }
 
 .user {
   background: #005c4b;
-  margin-left: auto;
-  text-align: right;
+  margin-right: auto;
+  text-align: left;
 }
 
 .bot {

@@ -32,3 +32,9 @@ async function sendMessage() {
 
   addMessage(data.reply, "bot");
 }
+
+document.getElementById("input").addEventListener("keydown", function(event) {
+  if (event.key === "Enter") {
+    sendMessage();
+  }
+});
