@@ -4,7 +4,7 @@ import requests
 import os
 
 app = Flask(__name__)
-CORS(app)  
+CORS(app)
 
 API_KEY = os.getenv("GROQ_API_KEY")
 
@@ -12,7 +12,7 @@ URL = "https://api.groq.com/openai/v1/chat/completions"
 
 SYSTEM_PROMPT = (
     "Eres un tutor de matemáticas y ciencias naturales para niños. "
-    "Explicas de forma simple y clara."
+    "Explicas de forma simple, clara y con ejemplos fáciles."
 )
 
 @app.route("/", methods=["GET"])
@@ -25,7 +25,7 @@ def chat():
         data = request.get_json()
 
         if not data or "message" not in data:
-            return jsonify({"error": "Falta 'message'"}), 400
+            return jsonify({"error": "Falta el campo 'message'"}), 400
 
         user_msg = data["message"]
 
@@ -44,7 +44,21 @@ def chat():
 
         response = requests.post(URL, json=payload, headers=headers)
 
-        result = response.json()
+        try:
+            result = response.json()
+        except Exception:
+            return jsonify({
+                "error": "Respuesta no válida de la API",
+                "raw": response.text
+            }), 500
+
+        print(result)
+
+        if "choices" not in result:
+            return jsonify({
+                "error": "Respuesta inválida de Groq",
+                "details": result
+            }), 500
 
         reply = result["choices"][0]["message"]["content"]
 
