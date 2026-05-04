@@ -21,12 +21,23 @@ html, body {
 }
 
 .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   background: #202c33;
   color: white;
   padding: 14px;
-  text-align: center;
   font-weight: bold;
   font-size: 16px;
+}
+
+.header button {
+  background: #ff4d4d;
+  border: none;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 #chat {
@@ -35,7 +46,6 @@ html, body {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  width: 100%;
 }
 
 .msg {
@@ -59,6 +69,11 @@ html, body {
 .bot {
   background: #202c33;
   align-self: flex-start;
+}
+
+#typing {
+  font-style: italic;
+  opacity: 0.7;
 }
 
 .input-box {
@@ -98,11 +113,13 @@ button {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* =========================
+   TABLET
+========================= */
 @media (max-width: 768px) {
 
   .header {
-    font-size: 15px;
-    padding: 12px;
+    font-size: 14px;
   }
 
   .msg {
@@ -119,10 +136,14 @@ button {
   }
 }
 
+/* =========================
+   CELULAR PEQUEÑO
+========================= */
 @media (max-width: 480px) {
 
   .header {
-    font-size: 14px;
+    font-size: 13px;
+    padding: 12px;
   }
 
   .msg {
