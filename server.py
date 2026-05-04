@@ -2,36 +2,27 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import sqlite3
 import requests
+import os
 
 app = Flask(__name__)
 CORS(app)
 
-API_KEY = "TU_API_KEY"
+API_KEY = os.getenv("GROQ_API_KEY")
 URL = "https://api.groq.com/openai/v1/chat/completions"
 
 SYSTEM_PROMPT = """
 Eres un tutor virtual especializado en matemáticas y ciencias naturales para niños de primaria y secundaria.
 
-Tu objetivo es enseñar de forma clara, simple y amigable.
-
-REGLAS IMPORTANTES:
-- Explica paso a paso como si el estudiante fuera principiante.
-- Usa ejemplos sencillos de la vida real.
-- No uses lenguaje técnico complicado.
-- Si el tema es matemático, descompón los ejercicios en pasos.
-- Si el tema es de ciencias naturales, explica con analogías simples.
-- Mantén respuestas educativas pero ajusta la longitud según el usuario.
-- Sé paciente, motivador y didáctico.
-- Si el estudiante pide "más corto", "resumen" o "breve", debes responder en máximo 3-5 líneas.
-- Si el estudiante pide más detalle, entonces amplía la explicación.
-- Nunca salgas del tema de matemáticas o ciencias naturales.
-- Usa emojis educativos de forma moderada.
-
-ESTILO:
-- Amigable
-- Tipo profesor de colegio
-- Claro y estructurado
+REGLAS:
+- Explica claro y paso a paso.
+- Usa ejemplos simples.
+- Si el usuario pide "más corto", responde breve (3-5 líneas).
+- Si pide detalle, amplía explicación.
+- Usa emojis educativos moderadamente 😊
+- No salgas de matemáticas o ciencias naturales.
 """
+
+MAX_HISTORY = 12
 
 def init_db():
     conn = sqlite3.connect("chat.db")
@@ -55,10 +46,14 @@ def save_message(role, message):
     conn.commit()
     conn.close()
 
-def get_history(limit=12):
+def get_history():
     conn = sqlite3.connect("chat.db")
     c = conn.cursor()
-    c.execute("SELECT role, message FROM messages ORDER BY id DESC LIMIT ?", (limit,))
+    c.execute("""
+        SELECT role, message FROM messages
+        ORDER BY id DESC
+        LIMIT ?
+    """, (MAX_HISTORY,))
     rows = c.fetchall()
     conn.close()
 
@@ -71,11 +66,21 @@ def clear_history():
     conn.commit()
     conn.close()
 
+@app.route("/", methods=["GET"])
+def home():
+    return "API funcionando ✔"
+
 @app.route("/chat", methods=["POST"])
 def chat():
     try:
+        if not API_KEY:
+            return jsonify({"error": "Falta GROQ_API_KEY en variables de entorno"}), 500
+
         data = request.get_json()
-        user_msg = data["message"]
+        user_msg = data.get("message", "")
+
+        if not user_msg:
+            return jsonify({"error": "Mensaje vacío"}), 400
 
         save_message("user", user_msg)
 
@@ -97,6 +102,14 @@ def chat():
         response = requests.post(URL, json=payload, headers=headers)
         result = response.json()
 
+        print("GROQ RESPONSE:", result)
+
+        if "choices" not in result:
+            return jsonify({
+                "error": "Respuesta inválida de Groq",
+                "details": result
+            }), 500
+
         reply = result["choices"][0]["message"]["content"]
 
         save_message("assistant", reply)
@@ -104,19 +117,13 @@ def chat():
         return jsonify({"reply": reply})
 
     except Exception as e:
+        print("ERROR BACKEND:", str(e))
         return jsonify({"error": str(e)}), 500
-
 
 @app.route("/clear", methods=["POST"])
 def clear():
     clear_history()
-    return jsonify({"status": "ok", "message": "Historial eliminado"})
-
-
-@app.route("/", methods=["GET"])
-def home():
-    return "API funcionando ✔"
-
+    return jsonify({"status": "ok"})
 
 if __name__ == "__main__":
     app.run()
