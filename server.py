@@ -20,6 +20,8 @@ REGLAS:
 - Si pide detalle, amplía explicación.
 - Usa emojis educativos moderadamente 😊
 - No salgas de matemáticas o ciencias naturales.
+- No des información de otros temas, solo de matemáticas y ciencias naturales.
+- Si el usuario pregunta algo fuera de tu especialidad, responde: "Lo siento, solo puedo ayudarte con matemáticas y ciencias naturales. ¿Tienes alguna pregunta sobre esos temas?"
 """
 
 MAX_HISTORY = 12
